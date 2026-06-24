@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dipak's Interview Dashboard</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --warning: #e67e22;
+            --bg: #f5f7fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .dashboard {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .alert-bar {
+            background: #e8f4fd;
+            border-left: 4px solid var(--accent);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .main-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .section-badge {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+        .answer-box {
+            background: #fafbfc;
+            border: 1px solid #e1e8ed;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-line;
+            line-height: 1.6;
+            margin-top: 15px;
+            display: none;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 150px));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            border: 1px solid #e1e8ed;
+        }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="header">
+        <h1>🎯 Dipak's Backend Interview Prep</h1>
+        <p>Spring Boot · Java Core · Microservices · System Design</p>
+    </div>
+
+    <div class="alert-bar">
+        <span>⏰ Active Reminder Schedules: <strong>08:00 AM | 02:00 PM | 10:00 PM</strong></span>
+        <button class="btn-success" id="btnNotify" style="padding: 6px 12px; font-size: 0.85rem;">🔔 Enable Desktop Alarms</button>
+    </div>
+
+    <div class="main-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="section-badge" id="lblSection">Loading...</span>
+            <span style="font-weight: bold; color: #7f8c8d;" id="lblId">Q: 0/90</span>
+        </div>
+        <div class="question-text" id="lblQuestion">Connecting prep files...</div>
+        
+        <div class="answer-box" id="boxAnswer"></div>
+
+        <div class="controls">
+            <button class="btn-warning" id="btnReveal">👀 Reveal Answer</button>
+            <button class="btn-primary" id="btnNext">🎲 Random Shuffle</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-val" id="statTotal">90</div>
+            <div style="color: #7f8c8d; font-size: 0.85rem;">Total Database Questions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: var(--success);">Active</div>
+            <div style="color: #7f8c8d; font-size: 0.85rem;">Notification Daemon Status</div>
+        </div>
+    </div>
+</div>
+
+<script src="questions.js"></script>
+<script>
+    let currentIdx = 0;
+    let lastCheckedHour = -1;
+
+    const lblSection = document.getElementById('lblSection');
+    const lblId = document.getElementById('lblId');
+    const lblQuestion = document.getElementById('lblQuestion');
+    const boxAnswer = document.getElementById('boxAnswer');
+    const btnReveal = document.getElementById('btnReveal');
+    const btnNext = document.getElementById('btnNext');
+    const btnNotify = document.getElementById('btnNotify');
+
+    function renderQuestion(index) {
+        if (!window.questionsData || questionsData.length === 0) return;
+        currentIdx = index;
+        const data = questionsData[index];
+        
+        lblSection.textContent = data.section;
+        lblId.textContent = `Q: ${data.id} / ${questionsData.length}`;
+        lblQuestion.textContent = data.question;
+        boxAnswer.textContent = data.answer;
+        boxAnswer.style.display = "none";
+        btnReveal.textContent = "👀 Reveal Answer";
+    }
+
+    function loadRandom() {
+        const rand = Math.floor(Math.random() * questionsData.length);
+        renderQuestion(rand);
+    }
+
+    btnReveal.addEventListener('click', () => {
+        if (boxAnswer.style.display === "none") {
+            boxAnswer.style.display = "block";
+            btnReveal.textContent = "🙈 Hide Answer";
+        } else {
+            boxAnswer.style.display = "none";
+            btnReveal.textContent = "👀 Reveal Answer";
+        }
+    });
+
+    btnNext.addEventListener('click', loadRandom);
+
+    btnNotify.addEventListener('click', () => {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                alert("System Registered! Keep this page open in a pinned tab. Notifications will dispatch automatically.");
+                btnNotify.style.display = 'none';
+            }
+        });
+    });
+
+    function runClockDaemon() {
+        const now = new Date();
+        const hr = now.getHours();
+        const targets = [8, 14, 22]; // 8 AM, 2 PM, 10 PM
+
+        if (targets.includes(hr) && hr !== lastCheckedHour) {
+            if (Notification.permission === "granted" && window.questionsData) {
+                const triggerIndex = Math.floor(Math.random() * questionsData.length);
+                const item = questionsData[triggerIndex];
+                
+                new Notification(`🧠 Core Concept Q#${item.id}`, {
+                    body: `${item.question}\n\nClick to evaluate your response pattern.`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3281/3281307.png',
+                    requireInteraction: true
+                });
+
+                renderQuestion(triggerIndex);
+                lastCheckedHour = hr;
+            }
+        }
+        if (!targets.includes(hr)) {
+            lastCheckedHour = -1;
+        }
+    }
+
+    window.onload = () => {
+        if (window.questionsData) {
+            document.getElementById('statTotal').textContent = questionsData.length;
+            loadRandom();
+            if (Notification.permission === "granted") {
+                btnNotify.style.display = 'none';
+            }
+            setInterval(runClockDaemon, 20000); // Poll clock every 20 seconds
+        }
+    };
+</script>
+</body>
+</html>
